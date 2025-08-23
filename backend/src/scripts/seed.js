@@ -1,9 +1,10 @@
-// ...existing code...
 require('dotenv').config();
 const { connect } = require('../db');
 const User = require('../models/user');
 const Group = require('../models/group');
 const { Incident } = require('../models/incident');
+const KnowledgeBase = require('../models/knowledgeBase');
+const KnowledgeArticle = require('../models/knowledgeArticle');
 
 async function seedDatabase() {
   await connect(process.env.MONGODB_URI);
@@ -12,7 +13,9 @@ async function seedDatabase() {
   await Promise.all([
     User.deleteMany({}),
     Group.deleteMany({}),
-    Incident.deleteMany({})
+    Incident.deleteMany({}),
+    KnowledgeArticle.deleteMany({}),
+    KnowledgeBase.deleteMany({})
   ]);
 
   // create users
@@ -26,6 +29,12 @@ async function seedDatabase() {
   const groups = await Group.create([
     { name: 'Network Team', description: 'Handles network incidents' },
     { name: 'Apps Team', description: 'Handles application incidents' }
+  ]);
+
+  // create knowledge bases
+  const bases = await KnowledgeBase.create([
+    { name: 'General IT', description: 'General IT how-to and troubleshooting', createdBy: users[0]._id },
+    { name: 'Onboarding', description: 'Onboarding guides and requests', createdBy: users[0]._id }
   ]);
 
   // create sample incidents
@@ -68,6 +77,32 @@ async function seedDatabase() {
       assignmentGroup: groups[1]._id,
       caller: users[2]._id,
       ticketType: 'request'
+    }
+  ]);
+
+  // create sample articles
+  await KnowledgeArticle.create([
+    {
+      title: 'How to connect to VPN',
+      shortDescription: 'Steps to connect to the corporate VPN',
+      description: '1) Install client\n2) Enter credentials\n3) If MFA, accept prompt\n4) Contact NetOps if failure',
+      category: 'Network',
+      knowledgeBase: bases[0]._id,
+      owner: users[1]._id,
+      validFrom: new Date(),
+      published: true,
+      tags: ['vpn', 'network', 'connect']
+    },
+    {
+      title: 'New starter laptop checklist',
+      shortDescription: 'What to do when issuing a laptop to a new starter',
+      description: 'Image machine, install standard apps, join domain, record asset tag.',
+      category: 'Onboarding',
+      knowledgeBase: bases[1]._id,
+      owner: users[0]._id,
+      validFrom: new Date(),
+      published: true,
+      tags: ['onboarding', 'laptop']
     }
   ]);
 

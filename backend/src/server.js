@@ -9,6 +9,8 @@ const { notFound, errorHandler } = require('./middleware/errorHandler');
 const usersRoute = require('./routes/users');
 const groupsRoute = require('./routes/groups');
 const incidentsRoute = require('./routes/incidents');
+const knowledgeBasesRoute = require('./routes/knowledgeBases');
+const knowledgeArticlesRoute = require('./routes/knowledgeArticles');
 
 const app = express();
 
@@ -21,6 +23,8 @@ app.get('/api/health', (req, res) => res.json({ ok: true }));
 app.use('/api/users', usersRoute);
 app.use('/api/groups', groupsRoute);
 app.use('/api/incidents', incidentsRoute);
+app.use('/api/knowledgeBases', knowledgeBasesRoute);
+app.use('/api/knowledgeArticles', knowledgeArticlesRoute);
 
 app.use(notFound);
 app.use(errorHandler);
