@@ -1,7 +1,7 @@
 const express = require('express');
+const router = express.Router();
 const { Incident, PRIORITIES, STATES } = require('../models/incident');
 
-const router = express.Router();
 
 // List incidents with search, state, priority, pagination
 router.get('/', async (req, res) => {
@@ -44,61 +44,56 @@ router.get('/', async (req, res) => {
 
   res.json({ items, total, page: Number(page), limit: Number(limit),     meta: { PRIORITIES, STATES } });
 });
-/* // List incidents with filters & pagination
-router.get('/', async (req, res) => {
-  const {
-    page = 1,
-    limit = 20,
-    state,
-    priority,
-    assignmentGroup,
-    assignedTo,
-    caller,
-    q
-  } = req.query;
 
-  const query = {};
-  if (state) query.state = state;
-  if (priority) query.priority = priority;
-  if (assignmentGroup) query.assignmentGroup = assignmentGroup;
-  if (assignedTo) query.assignedTo = assignedTo;
-  if (caller) query.caller = caller;
-  if (q) query.$or = [
-    { shortDescription: new RegExp(q, 'i') },
-    { description: new RegExp(q, 'i') },
-    { number: new RegExp(q, 'i') }
-  ];
 
-  const skip = (Number(page) - 1) * Number(limit);
 
-  const [items, total] = await Promise.all([
-    Incident.find(query)
-      .sort({ updatedAt: -1 })
-      .skip(skip)
-      .limit(Number(limit))
-      .populate('assignmentGroup assignedTo caller'),
-       Incident.countDocuments(query)
-  ]);
-
-  res.json({
-    items,
-    total,
-    page: Number(page),
-    limit: Number(limit),
-    meta: { PRIORITIES, STATES }
-  });
-}); */
-
-// Create incident
+// Create ticket (ITIL-aligned incident/request)
 router.post('/', async (req, res) => {
-  const { shortDescription, description, priority, state, assignmentGroup, assignedTo, caller } = req.body;
-  if (!shortDescription) return res.status(400).json({ error: 'shortDescription is required' });
-  if (!caller) return res.status(400).json({ error: 'caller is required' });
-  if (priority && !PRIORITIES.includes(priority)) return res.status(400).json({ error: 'invalid priority' });
-  if (state && !STATES.includes(state)) return res.status(400).json({ error: 'invalid state' });
+  const {
+    shortDescription,
+    description,
+    caller,
+    ticketType, // optional: 'incident'|'request'
+    impact,
+    urgency,
+    category,
+    subcategory,
+    configurationItem
+  } = req.body;
 
-  const incident = await Incident.create({ shortDescription, description, priority, state, assignmentGroup, assignedTo, caller });
-  const populated = await incident.populate('assignmentGroup assignedTo caller');
+  if (!shortDescription || !shortDescription.trim()) {
+    return res.status(400).json({ message: 'shortDescription is required' });
+  }
+  if (!caller) {
+    return res.status(400).json({ message: 'caller is required' });
+  }
+
+  // sanitize ticketType
+  const type = ticketType === 'request' ? 'request' : 'incident';
+
+  // default impact/urgency to medium (3) if not provided
+  const imp = Number(impact) || 3;
+  const urg = Number(urgency) || 3;
+
+  // compute priority using model static (ITIL matrix)
+  const priority = Incident.computePriority(imp, urg);
+
+  const payload = {
+    ticketType: type,
+    shortDescription: shortDescription.trim(),
+    description: description || '',
+    caller,
+    openedBy: caller, // for end-user portal openedBy is caller; agents may override
+    impact: imp,
+    urgency: urg,
+    priority,
+    category,
+    subcategory,
+    configurationItem
+  };
+
+  const created = await Incident.create(payload);
+  const populated = await Incident.findById(created._id).populate('assignmentGroup assignedTo caller openedBy');
   res.status(201).json(populated);
 });
 

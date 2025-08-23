@@ -1,4 +1,7 @@
-FROM node:20-alpine
+
+ARG NODE_VERSION=24.5.0
+
+FROM node:${NODE_VERSION}-alpine
 
 WORKDIR /usr/src/app
 

@@ -37,7 +37,8 @@ async function seedDatabase() {
       state: 'New',
       assignmentGroup: groups[0]._id,
       assignedTo: users[1]._id,
-      caller: users[2]._id
+      caller: users[2]._id,
+      ticketType: 'incident'
     },
     {
       shortDescription: 'Application error on login',
@@ -46,97 +47,27 @@ async function seedDatabase() {
       state: 'In Progress',
       assignmentGroup: groups[1]._id,
       assignedTo: users[1]._id,
-      caller: users[2]._id
+      caller: users[2]._id,
+      ticketType: 'incident'
     },
+    // sample request tickets
     {
-      shortDescription: 'Printer not working',
-      description: 'Office printer is offline and not responding',
-      priority: 'P4',
-      state: 'New',
-      assignmentGroup: groups[0]._id,
-      assignedTo: users[1]._id,
-      caller: users[2]._id
-    },
-    {
-      shortDescription: 'Slow internet connection',
-      description: 'Users report slow internet speeds in the office',
-      priority: 'P3',
-      state: 'In Progress',
-      assignmentGroup: groups[0]._id,
-      assignedTo: users[1]._id,
-      caller: users[2]._id
-    },
-    {
-      shortDescription: 'Software installation request',
-      description: 'Request to install Adobe Photoshop on workstation',
+      shortDescription: 'Request new laptop',
+      description: 'Employee onboarding - needs a laptop',
       priority: 'P4',
       state: 'New',
       assignmentGroup: groups[1]._id,
-      assignedTo: users[1]._id,
-      caller: users[2]._id
+      caller: users[2]._id,
+      ticketType: 'request'
     },
     {
-      shortDescription: 'Email delivery failure',
-      description: 'Emails sent to external domains are bouncing',
-      priority: 'P2',
-      state: 'New',
-      assignmentGroup: groups[0]._id,
-      assignedTo: users[1]._id,
-      caller: users[2]._id
-    },
-    {
-      shortDescription: 'Account locked out',
-      description: 'User unable to login due to account lockout',
-      priority: 'P1',
-      state: 'New',
-      assignmentGroup: groups[1]._id,
-      assignedTo: users[1]._id,
-      caller: users[2]._id
-    },
-    {
-      shortDescription: 'Laptop battery issue',
-      description: 'Laptop battery drains quickly',
+      shortDescription: 'Request access to Jira project',
+      description: 'User needs contributor access for project X',
       priority: 'P4',
       state: 'New',
-      assignmentGroup: groups[0]._id,
-      assignedTo: users[1]._id,
-      caller: users[2]._id
-    },
-    {
-      shortDescription: 'Access to shared drive',
-      description: 'User requests access to shared network drive',
-      priority: 'P3',
-      state: 'In Progress',
-      assignmentGroup: groups[0]._id,
-      assignedTo: users[1]._id,
-      caller: users[2]._id
-    },
-    {
-      shortDescription: 'Antivirus alert',
-      description: 'Antivirus detected malware on workstation',
-      priority: 'P1',
-      state: 'New',
       assignmentGroup: groups[1]._id,
-      assignedTo: users[1]._id,
-      caller: users[2]._id
-    },
-    {
-      shortDescription: 'Monitor flickering',
-      description: 'Monitor intermittently flickers and turns off',
-      priority: 'P4',
-      state: 'New',
-      assignmentGroup: groups[0]._id,
-      assignedTo: users[1]._id,
-      caller: users[2]._id
-    },
-    {
-      shortDescription: 'Password reset request',
-      description: 'User forgot password and needs reset',
-      priority: 'P2',
-      state: 'New',
-      assignmentGroup: groups[1]._id,
-      assignedTo: users[1]._id,
-      caller: users[2]._id
+      caller: users[2]._id,
+      ticketType: 'request'
     }
   ]);
 
@@ -151,9 +82,6 @@ if (require.main === module) {
 }
 
 module.exports = seedDatabase;
-// ...existing code...
-// ...existing code...
-
 /* require('dotenv').config();
 const { connect } = require('../db');
 const User = require('../models/user');
