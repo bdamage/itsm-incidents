@@ -1,0 +1,31 @@
+import React from 'react';
+import { Routes, Route, Link, Navigate } from 'react-router-dom';
+import IncidentsList from './pages/incidentsList.jsx';
+import IncidentEdit from './pages/incidentEdit.jsx';
+import ReportIncident from './pages/reportIncident'; // <-- add this import
+
+export default function App() {
+  return (
+    <div className="min-h-screen">
+      <header className="bg-white border-b">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+          <Link to="/" className="text-xl font-semibold">ITSM Incidents</Link>
+          <nav className="space-x-4">
+            <Link className="text-sm text-gray-600 hover:text-gray-900" to="/incidents">Incidents</Link>
+            <Link className="text-sm text-gray-600 hover:text-gray-900" to="/incidents/new">New Incident</Link>
+             <Link to="/report" className="text-sm text-blue-600 hover:underline">Report an Incident</Link> {/* <-- add link */}
+          </nav>
+        </div>
+      </header>
+      <main className="max-w-6xl mx-auto p-4">
+        <Routes>
+          <Route path="/" element={<Navigate to="/incidents" replace />} />
+           <Route path="/report" element={<ReportIncident />} /> {/* <-- add route */}
+          <Route path="/incidents" element={<IncidentsList />} />
+          <Route path="/incidents/new" element={<IncidentEdit mode="create" />} />
+          <Route path="/incidents/:id" element={<IncidentEdit mode="edit" />} />
+        </Routes>
+      </main>
+    </div>
+  );
+}
