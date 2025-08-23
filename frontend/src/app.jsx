@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, Link, Navigate } from 'react-router-dom';
 import IncidentsList from './pages/incidentsList.jsx';
 import IncidentEdit from './pages/incidentEdit.jsx';
+import IncidentItilEdit from './pages/incidentItilEdit.jsx';
 import ReportIncident from './pages/reportIncident'; // <-- add this import
 
 export default function App() {
@@ -13,7 +14,8 @@ export default function App() {
           <nav className="space-x-4">
             <Link className="text-sm text-gray-600 hover:text-gray-900" to="/incidents">Incidents</Link>
             <Link className="text-sm text-gray-600 hover:text-gray-900" to="/incidents/new">New Incident</Link>
-             <Link to="/report" className="text-sm text-blue-600 hover:underline">Report an Incident</Link> {/* <-- add link */}
+            <Link className="text-sm text-gray-600 hover:text-gray-900" to="/incidentsitil/new">New Incident (ITIL)</Link>
+            <Link to="/report" className="text-sm text-blue-600 hover:underline">Report an Incident</Link> {/* <-- add link */}
           </nav>
         </div>
       </header>
@@ -23,6 +25,7 @@ export default function App() {
            <Route path="/report" element={<ReportIncident />} /> {/* <-- add route */}
           <Route path="/incidents" element={<IncidentsList />} />
           <Route path="/incidents/new" element={<IncidentEdit mode="create" />} />
+          <Route path="/incidentsitil/new" element={<IncidentItilEdit mode="create" />} />
           <Route path="/incidents/:id" element={<IncidentEdit mode="edit" />} />
         </Routes>
       </main>
