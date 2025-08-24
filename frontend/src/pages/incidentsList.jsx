@@ -1,15 +1,28 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import IncidentTable from '../components/incidentTable.jsx';
-import { IncidentAPI } from '../api/incidents.js';
+import { IncidentAPI } from '../api/incidents';
+import {api} from '../api/client';
 
 export default function IncidentsList() {
   const [data, setData] = useState({ items: [], total: 0, meta: { PRIORITIES: [], STATES: [] } });
   const [q, setQ] = useState('');
   const [filters, setFilters] = useState({ state: '', priority: '' });
+  const [searchParams] = useSearchParams();
 
   useEffect(() => { fetchData(); }, []);
+
+  /*
+  useEffect(() => {
+    async function load() {
+      const params = Object.fromEntries([...searchParams]);
+      const res = await api.get('/api/incidents', { params });
+      setData(res.items || []);
+    }
+    load();
+    // eslint-disable-next-line
+  }, [searchParams.toString()]);
+*/
 
   async function fetchData() {
     const resp = await IncidentAPI.list({ q, state: filters.state || undefined, priority: filters.priority || undefined });

@@ -11,6 +11,8 @@ const groupsRoute = require('./routes/groups');
 const incidentsRoute = require('./routes/incidents');
 const knowledgeBasesRoute = require('./routes/knowledgeBases');
 const knowledgeArticlesRoute = require('./routes/knowledgeArticles');
+const catalogsRoute = require('./routes/catalogs');
+const workflowsRoute = require('./routes/workflows');
 
 const app = express();
 
@@ -25,6 +27,8 @@ app.use('/api/groups', groupsRoute);
 app.use('/api/incidents', incidentsRoute);
 app.use('/api/knowledgeBases', knowledgeBasesRoute);
 app.use('/api/knowledgeArticles', knowledgeArticlesRoute);
+app.use('/api/catalogs', catalogsRoute);
+app.use('/api/workflows', workflowsRoute);
 
 app.use(notFound);
 app.use(errorHandler);

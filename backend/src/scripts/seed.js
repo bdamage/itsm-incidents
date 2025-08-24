@@ -1,91 +1,59 @@
 require('dotenv').config();
 const { connect } = require('../db');
+const mongoose = require('mongoose');
+
 const User = require('../models/user');
 const Group = require('../models/group');
 const { Incident } = require('../models/incident');
 const KnowledgeBase = require('../models/knowledgeBase');
 const KnowledgeArticle = require('../models/knowledgeArticle');
+const Catalog = require('../models/catalog');
+const CatalogItem = require('../models/catalogItem');
 
 async function seedDatabase() {
+  if (!process.env.MONGODB_URI) {
+    console.error('MONGODB_URI not set in env');
+    process.exit(1);
+  }
+
   await connect(process.env.MONGODB_URI);
 
-  // clear collections (safe for dev/demo)
+  console.log('Clearing collections (users, groups, incidents, kb, catalogs)...');
   await Promise.all([
     User.deleteMany({}),
     Group.deleteMany({}),
     Incident.deleteMany({}),
+    KnowledgeBase.deleteMany({}),
     KnowledgeArticle.deleteMany({}),
-    KnowledgeBase.deleteMany({})
+    Catalog.deleteMany({}),
+    CatalogItem.deleteMany({})
   ]);
 
-  // create users
+  console.log('Creating users...');
   const users = await User.create([
     { name: 'Alice Admin', email: 'alice@example.com', role: 'admin' },
     { name: 'Ben Agent', email: 'ben@example.com', role: 'agent' },
+    { name: 'Kim KM', email: 'kim.km@example.com', role: 'knowledge_manager' },
     { name: 'Eve User', email: 'eve@example.com', role: 'end_user' }
   ]);
 
-  // create groups
+  console.log('Creating assignment groups...');
   const groups = await Group.create([
     { name: 'Network Team', description: 'Handles network incidents' },
     { name: 'Apps Team', description: 'Handles application incidents' }
   ]);
 
-  // create knowledge bases
+  console.log('Creating knowledge bases and articles...');
   const bases = await KnowledgeBase.create([
     { name: 'General IT', description: 'General IT how-to and troubleshooting', createdBy: users[0]._id },
     { name: 'Onboarding', description: 'Onboarding guides and requests', createdBy: users[0]._id }
   ]);
 
-  // create sample incidents
-  await Incident.create([
-    {
-      shortDescription: 'Unable to reach VPN',
-      description: 'User cannot authenticate to VPN service',
-      priority: 'P2',
-      state: 'New',
-      assignmentGroup: groups[0]._id,
-      assignedTo: users[1]._id,
-      caller: users[2]._id,
-      ticketType: 'incident'
-    },
-    {
-      shortDescription: 'Application error on login',
-      description: '500 error on login endpoint',
-      priority: 'P3',
-      state: 'In Progress',
-      assignmentGroup: groups[1]._id,
-      assignedTo: users[1]._id,
-      caller: users[2]._id,
-      ticketType: 'incident'
-    },
-    // sample request tickets
-    {
-      shortDescription: 'Request new laptop',
-      description: 'Employee onboarding - needs a laptop',
-      priority: 'P4',
-      state: 'New',
-      assignmentGroup: groups[1]._id,
-      caller: users[2]._id,
-      ticketType: 'request'
-    },
-    {
-      shortDescription: 'Request access to Jira project',
-      description: 'User needs contributor access for project X',
-      priority: 'P4',
-      state: 'New',
-      assignmentGroup: groups[1]._id,
-      caller: users[2]._id,
-      ticketType: 'request'
-    }
-  ]);
-
-  // create sample articles
-  await KnowledgeArticle.create([
+  const articles = await KnowledgeArticle.create([
     {
       title: 'How to connect to VPN',
       shortDescription: 'Steps to connect to the corporate VPN',
-      description: '1) Install client\n2) Enter credentials\n3) If MFA, accept prompt\n4) Contact NetOps if failure',
+      description: '1) Install VPN client\n2) Enter credentials\n3) Complete MFA\n4) Contact NetOps if still failing',
       category: 'Network',
       knowledgeBase: bases[0]._id,
       owner: users[1]._id,
@@ -95,77 +63,127 @@ async function seedDatabase() {
     },
     {
       title: 'New starter laptop checklist',
-      shortDescription: 'What to do when issuing a laptop to a new starter',
+      shortDescription: 'Checklist for issuing a laptop to a new starter',
       description: 'Image machine, install standard apps, join domain, record asset tag.',
       category: 'Onboarding',
       knowledgeBase: bases[1]._id,
-      owner: users[0]._id,
+      owner: users[2]._id,
       validFrom: new Date(),
       published: true,
       tags: ['onboarding', 'laptop']
+    },
+    {
+      title: 'Resetting your password',
+      shortDescription: 'Self-service password reset steps',
+      description: 'Use the SSO portal -> Forgot password -> follow email link. Contact Helpdesk if MFA issues.',
+      category: 'Accounts',
+      knowledgeBase: bases[0]._id,
+      owner: users[1]._id,
+      validFrom: new Date(),
+      published: true,
+      tags: ['password', 'sso']
     }
   ]);
 
-  console.log('✅ Seed data created');
+  console.log('Creating catalogs and catalog items...');
+  const catalogs = await Catalog.create([
+    { name: 'Hardware', description: 'Hardware requests and inventory', createdBy: users[0]._id },
+    { name: 'Software', description: 'Software install and license requests', createdBy: users[0]._id },
+    { name: 'Services', description: 'Common IT services', createdBy: users[0]._id }
+  ]);
+
+  await CatalogItem.create([
+    {
+      title: 'New Laptop (Standard)',
+      shortDescription: 'Order a standard new starter laptop',
+      description: 'Intel i5, 8GB RAM, 256GB SSD, company image preinstalled.',
+      category: 'Laptop',
+      catalog: catalogs[0]._id,
+      knowledgeArticle: articles.find(a => a.title.includes('laptop'))?._id || null,
+      available: true
+    },
+    {
+      title: 'Docking Station',
+      shortDescription: 'Order a USB-C docking station',
+      description: 'Universal docking station for supported laptops.',
+      category: 'Peripherals',
+      catalog: catalogs[0]._id,
+      knowledgeArticle: null,
+      available: true
+    },
+    {
+      title: 'Office Suite License',
+      shortDescription: 'Request Office productivity license',
+      description: 'Includes Word, Excel, PowerPoint and Outlook license assignment.',
+      category: 'Software',
+      catalog: catalogs[1]._id,
+      knowledgeArticle: null,
+      available: true
+    },
+    {
+      title: 'Jira Project Access',
+      shortDescription: 'Request contributor access to a Jira project',
+      description: 'Provide project key and reason; approvals may be required.',
+      category: 'Service',
+      catalog: catalogs[2]._id,
+      knowledgeArticle: articles.find(a => a.title.includes('password'))?._id || null,
+      available: true
+    }
+  ]);
+
+  console.log('Creating sample incidents and requests...');
+  await Incident.create([
+    {
+      shortDescription: 'Unable to reach VPN',
+      description: 'User cannot authenticate to VPN service',
+      priority: 'P2',
+      state: 'New',
+      assignmentGroup: groups[0]._id,
+      assignedTo: users[1]._id,
+      caller: users[3]._id,
+      openedBy: users[3]._id,
+      impact: 2,
+      urgency: 1,
+      ticketType: 'incident'
+    },
+    {
+      shortDescription: 'Application error on login',
+      description: '500 error on login endpoint',
+      priority: 'P3',
+      state: 'In Progress',
+      assignmentGroup: groups[1]._id,
+      assignedTo: users[1]._id,
+      caller: users[3]._id,
+      openedBy: users[3]._id,
+      impact: 3,
+      urgency: 3,
+      ticketType: 'incident'
+    },
+    {
+      shortDescription: 'Request new laptop for new starter',
+      description: 'Please provide a laptop for employee John Doe',
+      priority: 'P4',
+      state: 'New',
+      assignmentGroup: groups[1]._id,
+      caller: users[3]._id,
+      openedBy: users[3]._id,
+      ticketType: 'request'
+    }
+  ]);
+
+  console.log('✅ Seed finished');
 }
 
-// allow both programmatic use and CLI
 if (require.main === module) {
   seedDatabase()
-    .then(() => process.exit(0))
-    .catch((err) => { console.error(err); process.exit(1); });
+    .then(() => {
+      console.log('Seed complete, exiting');
+      process.exit(0);
+    })
+    .catch((err) => {
+      console.error('Seed error', err);
+      process.exit(1);
+    });
 }
 
 module.exports = seedDatabase;
-/* require('dotenv').config();
-const { connect } = require('../db');
-const User = require('../models/user');
-const Group = require('../models/group');
-const { Incident } = require('../models/incident');
-
-async function run() {
-  await connect(process.env.MONGODB_URI);
-
-  await Promise.all([
-    User.deleteMany({}),
-    Group.deleteMany({}),
-    Incident.deleteMany({})
-  ]);
-
-  const [alice, bob, carol] = await User.insertMany([
-    { name: 'Alice Agent', email: 'alice@example.com', role: 'agent' },
-    { name: 'Bob Enduser', email: 'bob@example.com', role: 'end_user' },
-    { name: 'Carol Admin', email: 'carol@example.com', role: 'admin' }
-  ]);
-
-  const [svcDesk, netOps] = await Group.insertMany([
-    { name: 'Service Desk', description: 'Frontline support' },
-    { name: 'Network Ops', description: 'Network issues' }
-  ]);
-
-  await Incident.insertMany([
-    {
-      shortDescription: 'Email not syncing on mobile',
-      description: 'User reports mobile app no longer syncs new emails',
-      priority: 'P3',
-      state: 'New',
-      assignmentGroup: svcDesk._id,
-      assignedTo: alice._id,
-      caller: bob._id
-    },
-    {
-      shortDescription: 'Office Wi-Fi intermittent',
-      description: 'Multiple users report drops in Building A',
-      priority: 'P2',
-      state: 'In Progress',
-      assignmentGroup: netOps._id,
-      assignedTo: alice._id,
-      caller: bob._id
-    }
-  ]);
-
-  console.log('✅ Seed complete');
-  process.exit(0);
-}
-
-run().catch((e) => { console.error(e); process.exit(1); }); */

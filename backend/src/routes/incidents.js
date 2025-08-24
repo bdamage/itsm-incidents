@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { Incident, PRIORITIES, STATES } = require('../models/incident');
+const workflowEngine = require('../services/workflowEngine'); // new
 
 
 // List incidents with search, state, priority, pagination
@@ -94,6 +95,16 @@ router.post('/', async (req, res) => {
 
   const created = await Incident.create(payload);
   const populated = await Incident.findById(created._id).populate('assignmentGroup assignedTo caller openedBy');
+
+  // trigger workflows for 'incidents' 'create'
+  try {
+    workflowEngine.handleEvent('incidents', 'create', populated, { source: 'api' }).catch((err) => {
+      console.error('workflow error', err);
+    });
+  } catch (err) {
+    console.error('workflow handler sync error', err);
+  }
+
   res.status(201).json(populated);
 });
 
@@ -102,6 +113,25 @@ router.get('/:id', async (req, res) => {
   const incident = await Incident.findById(req.params.id).populate('assignmentGroup assignedTo caller');
   if (!incident) return res.status(404).json({ error: 'Incident not found' });
   res.json(incident);
+});
+
+// Update ticket (patch)
+router.put('/:id', async (req, res) => {
+  const updated = await Incident.findByIdAndUpdate(req.params.id, req.body, { new: true }).populate(
+    'assignmentGroup assignedTo caller openedBy'
+  );
+  if (!updated) return res.status(404).json({ message: 'Not found' });
+
+  // trigger workflows for 'incidents' 'update'
+  try {
+    workflowEngine.handleEvent('incidents', 'update', updated, { source: 'api' }).catch((err) => {
+      console.error('workflow error', err);
+    });
+  } catch (err) {
+    console.error('workflow handler sync error', err);
+  }
+
+  res.json(updated);
 });
 
 // Update (partial)

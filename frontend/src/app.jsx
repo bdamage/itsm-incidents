@@ -8,6 +8,8 @@ import KnowledgePortal from './pages/knowledgePortal';
 import KnowledgeDetail from './pages/knowledgeDetail';
 import AdminKnowledgeList from './pages/adminKnowledgeList';
 import AdminKnowledgeEdit from './pages/adminKnowledgeEdit';
+import ServiceCatalog from './pages/serviceCatalog';
+import UserTicketsWidget from './components/userTicketsWidget';
 
 export default function App() {
   return (
@@ -22,6 +24,7 @@ export default function App() {
             <Link to="/report" className="text-sm text-blue-600 hover:underline">Report an Incident</Link> {/* <-- add link */}
             <Link to="/knowledge" className="text-sm text-gray-700 hover:underline">Knowledge</Link>
             <Link to="/admin/knowledge" className="text-sm text-gray-700 hover:underline">KB Admin</Link>
+            <Link to="/catalog" className="text-sm text-gray-700 hover:underline">Catalog</Link> {/* <-- add link */}
           </nav>
         </div>
       </header>
@@ -38,6 +41,7 @@ export default function App() {
           <Route path="/admin/knowledge" element={<AdminKnowledgeList />} />
           <Route path="/admin/knowledge/new" element={<AdminKnowledgeEdit />} />
           <Route path="/admin/knowledge/:id" element={<AdminKnowledgeEdit />} />
+          <Route path="/catalog" element={<ServiceCatalog />} /> {/* <-- register route */}
         </Routes>
       </main>
     </div>
