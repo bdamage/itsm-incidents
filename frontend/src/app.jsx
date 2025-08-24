@@ -10,6 +10,8 @@ import AdminKnowledgeList from './pages/adminKnowledgeList';
 import AdminKnowledgeEdit from './pages/adminKnowledgeEdit';
 import ServiceCatalog from './pages/serviceCatalog';
 import UserTicketsWidget from './components/userTicketsWidget';
+import WorkflowBuilder from './pages/workflowBuilder';
+import AdminWorkflows from './pages/adminWorkflows';
 
 export default function App() {
   return (
@@ -21,17 +23,19 @@ export default function App() {
             <Link className="text-sm text-gray-600 hover:text-gray-900" to="/incidents">Incidents</Link>
             <Link className="text-sm text-gray-600 hover:text-gray-900" to="/incidents/new">New Incident</Link>
             <Link className="text-sm text-gray-600 hover:text-gray-900" to="/incidentsitil/new">New Incident (ITIL)</Link>
-            <Link to="/report" className="text-sm text-blue-600 hover:underline">Report an Incident</Link> {/* <-- add link */}
+            <Link to="/report" className="text-sm text-blue-600 hover:underline">Report an Incident</Link> 
             <Link to="/knowledge" className="text-sm text-gray-700 hover:underline">Knowledge</Link>
             <Link to="/admin/knowledge" className="text-sm text-gray-700 hover:underline">KB Admin</Link>
-            <Link to="/catalog" className="text-sm text-gray-700 hover:underline">Catalog</Link> {/* <-- add link */}
+            <Link to="/catalog" className="text-sm text-gray-700 hover:underline">Catalog</Link>
+            <Link to="/admin/workflows" className="text-sm text-gray-700 hover:underline">Workflow builder</Link>
+         
           </nav>
         </div>
       </header>
       <main className="max-w-6xl mx-auto p-4">
         <Routes>
           <Route path="/" element={<Navigate to="/incidents" replace />} />
-          <Route path="/report" element={<ReportIncident />} /> {/* <-- add route */}
+          <Route path="/report" element={<ReportIncident />} /> 
           <Route path="/incidents" element={<IncidentsList />} />
           <Route path="/incidents/new" element={<IncidentEdit mode="create" />} />
           <Route path="/incidentsitil/new" element={<IncidentItilEdit mode="create" />} />
@@ -41,7 +45,10 @@ export default function App() {
           <Route path="/admin/knowledge" element={<AdminKnowledgeList />} />
           <Route path="/admin/knowledge/new" element={<AdminKnowledgeEdit />} />
           <Route path="/admin/knowledge/:id" element={<AdminKnowledgeEdit />} />
-          <Route path="/catalog" element={<ServiceCatalog />} /> {/* <-- register route */}
+          <Route path="/catalog" element={<ServiceCatalog />} /> 
+          <Route path="/admin/workflows" element={<AdminWorkflows />} /> 
+          <Route path="/admin/workflows/:id" element={<WorkflowBuilder />} /> 
+          <Route path="/admin/workflows/new" element={<WorkflowBuilder />} /> 
         </Routes>
       </main>
     </div>

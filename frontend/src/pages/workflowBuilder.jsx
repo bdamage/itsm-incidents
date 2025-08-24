@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { WorkflowsAPI } from '../api/workflows';
-import client from '../api/client';
+import {api} from '../api/client';
 import { useNavigate } from 'react-router-dom';
 
 /*
